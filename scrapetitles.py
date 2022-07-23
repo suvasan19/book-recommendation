@@ -29,37 +29,47 @@ except (OSError, IOError) as e:
     df = pd.read_json('goodreads_reviews_spoiler.json',lines=True)
     df.to_pickle('goodreads_reviews_spoiler.pkl')
 
-
+df["bookTitle"] = np.nan
 
 #print(df["review_sentences"].head())
 #print(df.columns.tolist())
+
+
 print(df.columns.tolist())
 test_df  = df.head(10)
 
 
-URL = "https://www.goodreads.com/book/show/22816087"
-print(URL)
-page = requests.get(URL)
-soup = BeautifulSoup(page.content, "html.parser")
-bookTitle = soup.find(id="bookTitle").text.strip()
-print(bookTitle)
+# URL = "https://www.goodreads.com/book/show/22816087"
+# print(URL)
+# page = requests.get(URL)
+# soup = BeautifulSoup(page.content, "html.parser")
+# bookTitle = soup.find(id="bookTitle").text.strip()
+# print(bookTitle)
+
+
 
 def scrape_df(df):
-    idCol = df["book_id"]
-    print(idCol)
-    titles = []
-    for bid in idCol:
-        bookID = bid
+    nullCounter = 0
+    for i,row in df.iterrows():
+        
+        print(row["book_id"])
+        print(i)
+        bookID = row["book_id"]
         URL = "https://www.goodreads.com/book/show/"+str(bookID)
         print(URL)
         page = requests.get(URL)
         soup = BeautifulSoup(page.content, "html.parser")
+        try:    
+            bookTitle = soup.find(id="bookTitle").text.strip()
+            print(bookTitle)
+            row["bookTitle"] = bookTitle    
+        except:
+            print("an error occured")
+            nullCounter = nullCounter + 1
+    
+    return df     
         
-        bookTitle = soup.find(id="bookTitle").text.strip()
-        print(bookTitle)
-        #titles.append(bookTitle)
         
-    #df["bookTitle"] = titles    
     
     
         #print(booktitle)
@@ -71,10 +81,11 @@ def scrape_df(df):
     #     bookTitle = str(soup.find(id="bookTitle").text).strip()
     #     row[bookTitle] = bookTitle
         #print(booktitle)
-    return df   
+    
 
 
 test_df=scrape_df(test_df)     
 
-#print(test_df["bookTitle"])
+print(test_df["bookTitle"])
+
 print("program done")
